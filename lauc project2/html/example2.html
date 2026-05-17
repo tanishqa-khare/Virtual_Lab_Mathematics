@@ -1,0 +1,85 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>INFORMATION PORTAL</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="../css/main.css" />
+	</head>
+	<body class="is-preload">
+
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Main -->
+					<div id="main">
+						<div class="inner">
+
+							<!-- Header -->
+								<header id="header">
+									<a href="../html/index.html" class="logo"><strong>INFORMATION PORTAL</strong></a>
+								</header>
+
+							<!-- Content -->
+								<section>
+									<header class="main">
+										<h1>ELECTRIC CIRCUIT</h1>
+									</header>
+
+                                    <img src="../images/eg4.jpg" alt="" />
+                                    <img src="../images/eg5.jpg" alt="" />
+                                    <img src="../images/eg6.jpg" alt="" />
+									<hr class="major" />
+
+								</section>
+
+						</div>
+					</div>  <!-- ✅ closes #main -->
+
+				<!-- Sidebar -->
+					<div id="sidebar">
+						<div class="inner">
+
+							<!-- Menu -->
+								<nav id="menu">
+									<header class="major">
+										<h2>Menu</h2>
+									</header>
+									<ul>
+										<li><a href="../html/index.html">Homepage</a></li>
+										<li><a href="../html/about us.html">About Us</a></li>
+										<li><a href="../html/info.html">Information portal</a></li>
+										<li><a href="../html/test.html">Take Test</a></li>
+                                        <li><a href="../html/lb.html">Leader Board</a></li>
+										<li><a>Simulation</a>
+                                        <select id="pageSelect">
+    										<option value="">-- Select --</option>
+    										<option value="../html/kcl.html">Kirchoff's current law</option>
+    										<option value="../html/kvl.html">Kirchoff's voltage law</option>
+    										<option value="../html/harmonic.html">Harmonic analysis</option>
+											
+									</select>
+                                        <br>
+										<button onclick="goToPage()">Go</button>
+										
+										<script>
+											function goToPage() 
+											{
+    											var url = document.getElementById("pageSelect").value;
+    											if (url) 
+												{
+        											window.location.href = url;
+    											}
+											}
+										</script>
+                                        </li>
+										
+									</ul>
+								</nav>
+						</div>
+					</div>  <!-- ✅ closes #sidebar -->
+
+			</div>  <!-- ✅ closes #wrapper -->
+
+	</body>
+</html>

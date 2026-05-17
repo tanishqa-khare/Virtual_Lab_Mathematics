@@ -1,0 +1,94 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>ABOUT US</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="../css/main.css" />
+	</head>
+	<body class="is-preload">
+
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Main -->
+					<div id="main">
+						<div class="inner">
+
+							<!-- Header -->
+								<header id="header">
+									<a href="../html/index.html" class="logo"><strong>ABOUT US -</strong> LAB-Mathematics</a>
+									
+								</header>
+
+							<!-- Content -->
+								<section>
+									<header class="main">
+										<h1>About Us</h1>
+									</header>
+
+									<span class="image main"><img src="../images/aboutus.jpg" alt="" /></span>
+
+									<p>VIRTUAL LAB -Mathematics helps in solving complex circuit and series problems.The problems which usually consume a lot of time in theoratical solving are solved within seconds with the use of Virtual Lab.This website enables the user to input matrix or table of required specifications, also giving the choice of method by which they want to solve the problem.</p>
+									<p>This website is dedicated to efficient,fast and accurate solving of mathematical problems related to concepts of KVL,KCL and harmonic series.Want to check answers of homework or assignment on matrices?We got you!Input your question and get the answer.We ensure correct answers to all your questions.</p>
+									<p>Give a digital approach to your circuit and series problems.Conquer mathematics challenges with us!</p>
+
+									<hr class="major" />
+
+									 
+
+								</section>
+
+						</div>
+					</div>
+
+				<!-- Sidebar -->
+					<div id="sidebar">
+						<div class="inner">
+
+							<!-- Menu -->
+								<nav id="menu">
+									<header class="major">
+										<h2>Menu</h2>
+									</header>
+									<ul>
+										<li><a href="../html/index.html">Homepage</a></li>
+										<li><a href="../html/about us.html">About Us</a></li>
+										<li><a href="../html/info.html">Information portal</a></li>
+										<li><a href="../html/test.html">Take Test</a></li>
+										<li><a href="../html/lb.html">Leader Board</a></li>
+										
+										<li><a>Simulation</a>
+										<select id="pageSelect">
+    										<option value="">-- Select --</option>
+    										<option value="../html/kcl.html">Kirchoff's current law</option>
+    										<option value="../html/kvl.html">Kirchoff's voltage law</option>
+    										<option value="../html/harmonic.html">Harmonic analysis</option>
+											
+										</select>
+										<br>
+										<button onclick="goToPage()">Go</button>
+										
+										<script>
+											function goToPage() 
+											{
+    											var url = document.getElementById("pageSelect").value;
+    											if (url) 
+												{
+        											window.location.href = url;
+    											}
+											}
+										</script>
+										</li>
+										
+									</ul>
+								</nav>
+						</div>
+					</div>
+
+			</div>
+
+		
+
+	</body>
+</html>

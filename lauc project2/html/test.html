@@ -1,0 +1,100 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>Virtual Lab</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="../css/main.css" />
+	</head>
+	<body class="is-preload">
+        <!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Main -->
+					<div id="main">
+						<div class="inner">
+
+							<!-- Header -->
+								<header id="header">
+									<a href="#" class="logo"><strong>VIRTUAL LAB</strong></a>
+									
+								</header>
+
+							
+
+							<div class="container">
+                                <iframe src="https://forms.gle/uxsYz23cp5Y2YmZC8" 
+                                width="640" 
+                                height="4338" 
+                                frameborder="0" 
+                                marginheight="0" 
+                                marginwidth="0">
+                                    Loading…</iframe>
+                            </div>
+
+							<!-- Section -->
+								<section>
+									<header class="major">
+										
+									</header>
+									<div class="posts">
+										
+									</div>
+								</section>
+
+						</div>
+					</div>
+
+				<!-- Sidebar -->
+					<div id="sidebar">
+						<div class="inner">
+
+							<!-- Menu -->
+								<nav id="menu">
+									<header class="major">
+										<h2>Menu</h2>
+									</header>
+									<ul>
+										<li><a href="../html/index.html">Homepage</a></li>
+										<li><a href="../html/about us.html">About Us</a></li>
+										<li><a href="../html/info.html">Information Portal</a></li>
+										<li><a href="../html/test.html">Take Test</a></li>
+										<li><a href="../html/lb.html">Leader Board</a></li>
+										<li><a >Simulation</a>
+										<select id="pageSelect">
+    										<option value="">-- Select --</option>
+    										<option value="../html/kcl.html">Kirchoff's current law</option>
+    										<option value="../html/kvl.html">Kirchoff's voltage law</option>
+    										<option value="../html/harmonic.html">Harmonic analysis</option>
+											
+    										
+										</select>
+										<br>
+										<button onclick="goToPage()">Go</button>
+										
+										<script>
+											function goToPage() 
+											{
+    											var url = document.getElementById("pageSelect").value;
+    											if (url) 
+												{
+        											window.location.href = url;
+    											}
+											}
+										</script>
+										</li>
+										
+									</ul>
+								</nav>
+
+							
+
+						</div>
+					</div>
+
+			</div>
+
+		
+
+	</body>
+</html>
