@@ -1,0 +1,673 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Matrix Rank & Solver (Cramer / Gaussian / Gauss-Jordan)</title>
+<style>
+  :root{
+    --bg:#e76f50;        
+    --card:#fff8ef;      
+    --accent:#d85424;
+    --muted:#5b3a29;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace;
+  }
+  html,body{height:100%;margin:0}
+  body{
+    background: linear-gradient(180deg,var(--bg), #ffb77a);
+    font-family: Inter, system-ui, Arial, sans-serif;
+    color: #3b2b20;
+    padding:24px;
+    box-sizing:border-box;
+  }
+  .wrap{
+    max-width:1000px;
+    margin:0 auto;
+  }
+  header{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+  h1{margin:0;font-size:20px}
+  .card{
+    background:var(--card);
+    border-radius:12px;
+    padding:16px;
+    margin-bottom:14px;
+    box-shadow:0 8px 24px rgba(0,0,0,0.12);
+  }
+  label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+  input[type="number"]{padding:8px;border-radius:8px;border:1px solid rgba(0,0,0,0.06);width:84px}
+  button{background:var(--accent);color:white;border:none;padding:8px 12px;border-radius:8px;cursor:pointer;margin-right:8px}
+  button.secondary{background:transparent;border:1px solid rgba(0,0,0,0.06);color:var(--muted)}
+  table.matrix{border-collapse:collapse}
+  table.matrix td{padding:4px}
+  table.matrix input{width:72px;padding:6px;border-radius:6px;border:1px solid rgba(0,0,0,0.06);text-align:center}
+  pre.steps{background:#fff6ed;padding:12px;border-radius:8px;white-space:pre-wrap;font-family:var(--mono);color:var(--muted);border:1px solid rgba(0,0,0,0.04);line-height:1.4}
+  .result-section{margin-top:16px;padding-top:16px;border-top:1px solid rgba(0,0,0,0.06)}
+  .result-title{font-weight:600;margin-top:6px;margin-bottom:6px}
+  .summary-box{background:#e8f5e8;padding:12px;border-radius:8px;border-left:4px solid #4caf50;margin-top:12px}
+  .error-box{background:#fce4e4;padding:12px;border-radius:8px;border-left:4px solid #f44336;margin-top:12px;color:#721c24}
+  .small{font-size:13px;color:var(--muted)}
+  .flex{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  .grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+  .step-header{font-weight:600;color:var(--accent);margin:8px 0 4px 0}
+  .step-matrix{margin:8px 0}
+
+
+  .help-btn {
+    position: fixed;
+    right: 18px;
+    top: 50px;
+    width:44px;height:44px;border-radius:50%;
+    background: white; color: var(--muted);
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 8px 20px rgba(0,0,0,0.12);
+    cursor:pointer; z-index:60; font-weight:700;
+    border:2px solid rgba(0,0,0,0.06);
+  }
+  .help-panel {
+    position: fixed; right: 72px; top: 96px; width:320px;
+    background: var(--card); padding:12px; border-radius:10px;
+    box-shadow:0 12px 36px rgba(0,0,0,0.14); z-index:59; display:none;
+  }
+  .help-panel.visible{display:block; animation:pop .12s ease-out;}
+  @keyframes pop{from{transform:translateY(-6px) scale(.98);opacity:0}to{transform:none;opacity:1}}
+
+ 
+  @media (max-width:640px){
+    input[type="number"]{width:68px}
+    table.matrix input{width:56px}
+    .help-panel{right:12px;left:12px;top:auto;bottom:18px;width:auto}
+    .help-btn{top:auto;bottom:86px}
+    body{padding:16px}
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>Matrix Rank & Solver — Cramer / Gaussian / Gauss-Jordan</h1>
+        <div class="small">Generate matrix, compute rank & dependence, solve Ax=b with organized step-by-step output (2 decimal precision).</div>
+      </div>
+    </header>
+
+    <div class="card">
+      <div class="grid">
+        <div>
+          <label>Rows</label>
+          <input id="rows" type="number" min="1" max="12" value="3">
+        </div>
+        <div>
+          <label>Columns</label>
+          <input id="cols" type="number" min="1" max="12" value="3">
+        </div>
+        <div style="align-self:end">
+          <button id="genBtn">Generate matrix</button>
+          <button id="randBtn" class="secondary">Fill random</button>
+        </div>
+      </div>
+      <div class="small" style="margin-top:10px">
+        <b>Note:</b> Cramer's Rule requires square matrix (n×n) with det(A) ≠ 0. Rank works for any size.
+      </div>
+    </div>
+
+    <div class="card" id="matrixCard">
+      <div class="result-section">
+        <div class="result-title"> Step 1 — Matrix A (edit entries)</div>
+        <div id="matrixContainer"></div>
+      </div>
+
+      <div class="result-section">
+        <div class="result-title"> Step 2 — Right-hand side vector b</div>
+        <div id="vectorB" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+      </div>
+
+      <div style="margin-top:12px" class="flex">
+        <div>
+          <button id="computeBtn"> Compute Rank & Dependence</button>
+          <button id="clearBtn" class="secondary"> Clear entries</button>
+        </div>
+        <div style="margin-left:8px">
+          <label class="small">Show form:</label>
+          <div style="margin-top:4px">
+            <label><input type="radio" name="formMode" value="rref" checked> (Normal)</label>
+            <label ><input type="radio" name="formMode" value="ref">(Echelon)</label>
+          </div>
+          <button id="showFormBtn" class="secondary">Show form</button>
+        </div>
+      </div>
+      <div id="rankOut" style="margin-top:12px"></div>
+      <div id="formOut" style="margin-top:10px"></div>
+    </div>
+
+    <div class="card" id="methodCard" style="display:none">
+      <div class="result-section">
+        <div class="result-title"> Step 3 — Choose solving method</div>
+        <div class="grid">
+          <label><input type="radio" name="method" value="cramer">  Cramer's Rule</label>
+          <label><input type="radio" name="method" value="gaussian" checked>  Gaussian elimination</label>
+          <label><input type="radio" name="method" value="gaussjordan">  Gauss-Jordan (RREF)</label>
+        </div>
+        <button id="solveBtn">Solve (detailed steps)</button>
+      </div>
+      <div class="small" style="margin-top:8px">All methods show organized steps with 2 decimal precision. Cramer requires square matrix with non-zero determinant.</div>
+    </div>
+
+    <div class="card" id="answerCard" style="display:none">
+      <div class="result-title"> Solution — Complete Step-by-Step</div>
+      <div id="answerOut"></div>
+    </div>
+
+  </div>
+
+  <div class="help-btn" id="helpBtn" title="Help (click)"><span style="font-size:18px">i</span></div>
+  <div class="help-panel" id="helpPanel" role="dialog" aria-hidden="true">
+    <div style="font-weight:700;margin-bottom:6px"> Quick Guide</div>
+    <div class="small">
+      1. <b>Generate matrix</b> & edit entries (or use <b>Fill random</b>)<br>
+      2. <b>Compute Rank</b> to check linear independence<br>
+      3. <b>Show form</b> to see reduced matrices<br>
+      4. Choose method & <b>Solve</b> — get organized steps with 2 decimal precision
+    </div>
+  </div>
+
+<script>
+  
+  const EPS = 1e-12;
+  const PRECISION = 2;
+
+  function formatNum(x) {
+    if (typeof x !== 'number' || !isFinite(x)) return String(x);
+    if (Math.abs(x) < EPS) return '0.00';
+    if (Math.abs(x) < 1e-6) return parseFloat(x.toExponential(2)).toFixed(PRECISION);
+    if (Math.abs(x - Math.round(x)) < 1e-9) return Math.round(x).toFixed(0);
+    return parseFloat(x).toFixed(PRECISION);
+  }
+
+  // --- DOM Elements ---
+  const rowsEl = document.getElementById('rows'), colsEl = document.getElementById('cols');
+  const matrixContainer = document.getElementById('matrixContainer');
+  const vectorB = document.getElementById('vectorB');
+  const genBtn = document.getElementById('genBtn'), randBtn = document.getElementById('randBtn');
+  const computeBtn = document.getElementById('computeBtn'), clearBtn = document.getElementById('clearBtn');
+  const rankOut = document.getElementById('rankOut'), methodCard = document.getElementById('methodCard');
+  const solveBtn = document.getElementById('solveBtn'), answerCard = document.getElementById('answerCard'), answerOut = document.getElementById('answerOut');
+  const showFormBtn = document.getElementById('showFormBtn'), formOut = document.getElementById('formOut');
+
+  function createMatrixInputs(r, c) {
+    matrixContainer.innerHTML = '';
+    const table = document.createElement('table');
+    table.className = 'matrix';
+    for (let i = 0; i < r; i++) {
+      const tr = document.createElement('tr');
+      for (let j = 0; j < c; j++) {
+        const td = document.createElement('td');
+        const inp = document.createElement('input');
+        inp.type = 'number';
+        inp.step = '0.01';
+        inp.id = `a_${i}_${j}`;
+        inp.value = (i === j && r === c) ? '1' : '0';
+        td.appendChild(inp);
+        tr.appendChild(td);
+      }
+      table.appendChild(tr);
+    }
+    matrixContainer.appendChild(table);
+    createVectorB(r);
+  }
+
+  function createVectorB(r) {
+    vectorB.innerHTML = '';
+    for (let i = 0; i < r; i++) {
+      const inp = document.createElement('input');
+      inp.type = 'number';
+      inp.step = '0.01';
+      inp.id = `b_${i}`;
+      inp.value = '0';
+      inp.style.width = '72px';
+      vectorB.appendChild(inp);
+    }
+  }
+
+  function readMatrix() {
+    const r = Number(rowsEl.value), c = Number(colsEl.value);
+    const A = Array.from({length: r}, () => Array(c).fill(0));
+    for (let i = 0; i < r; i++) {
+      for (let j = 0; j < c; j++) {
+        const v = parseFloat(document.getElementById(`a_${i}_${j}`).value);
+        A[i][j] = Number.isFinite(v) ? v : 0;
+      }
+    }
+    return A;
+  }
+
+  function readB() {
+    const r = Number(rowsEl.value);
+    const b = Array(r).fill(0);
+    for (let i = 0; i < r; i++) {
+      const v = parseFloat(document.getElementById(`b_${i}`).value);
+      b[i] = Number.isFinite(v) ? v : 0;
+    }
+    return b;
+  }
+
+
+  function copyMat(A) { return A.map(r => r.slice()); }
+
+  function determinant(A) {
+    const n = A.length;
+    if (!A.every(row => row.length === n)) throw new Error('Determinant needs square matrix');
+    const M = copyMat(A);
+    let detSign = 1, det = 1;
+    for (let i = 0; i < n; i++) {
+      let pivot = i;
+      for (let r = i; r < n; r++) {
+        if (Math.abs(M[r][i]) > Math.abs(M[pivot][i])) pivot = r;
+      }
+      if (Math.abs(M[pivot][i]) < EPS) return 0;
+      if (pivot !== i) {
+        [M[pivot], M[i]] = [M[i], M[pivot]];
+        detSign *= -1;
+      }
+      det *= M[i][i];
+      for (let r = i + 1; r < n; r++) {
+        const factor = M[r][i] / M[i][i];
+        for (let c = i; c < n; c++) {
+          M[r][c] -= factor * M[i][c];
+        }
+      }
+    }
+    return detSign * det;
+  }
+
+  function matrixRank(A) {
+    let M = copyMat(A);
+    const m = M.length, n = (m > 0) ? M[0].length : 0;
+    let rank = 0, row = 0;
+    for (let col = 0; col < n && row < m; col++) {
+      let sel = row;
+      for (let i = row; i < m; i++) {
+        if (Math.abs(M[i][col]) > Math.abs(M[sel][col])) sel = i;
+      }
+      if (Math.abs(M[sel][col]) < EPS) continue;
+      [M[sel], M[row]] = [M[row], M[sel]];
+      const pv = M[row][col];
+      for (let j = col; j < n; j++) M[row][j] /= pv;
+      for (let i = 0; i < m; i++) {
+        if (i === row) continue;
+        const f = M[i][col];
+        if (Math.abs(f) < EPS) continue;
+        for (let j = col; j < n; j++) M[i][j] -= f * M[row][j];
+      }
+      row++; rank++;
+    }
+    return rank;
+  }
+
+  function computeREF(Aorig) {
+    const M = copyMat(Aorig);
+    const rows = M.length, cols = (rows > 0 ? M[0].length : 0);
+    let r = 0;
+    for (let c = 0; c < cols && r < rows; c++) {
+      let sel = r;
+      for (let i = r; i < rows; i++) {
+        if (Math.abs(M[i][c]) > Math.abs(M[sel][c])) sel = i;
+      }
+      if (Math.abs(M[sel][c]) < EPS) continue;
+      if (sel !== r) [M[sel], M[r]] = [M[r], M[sel]];
+      for (let i = r + 1; i < rows; i++) {
+        const factor = M[i][c] / M[r][c];
+        if (Math.abs(factor) < EPS) continue;
+        for (let j = c; j < cols; j++) {
+          M[i][j] -= factor * M[r][j];
+          if (Math.abs(M[i][j]) < EPS) M[i][j] = 0;
+        }
+      }
+      r++;
+    }
+    return M;
+  }
+
+  function computeRREF(Aorig) {
+    const M = copyMat(Aorig);
+    const rows = M.length, cols = (rows > 0 ? M[0].length : 0);
+    let r = 0;
+    for (let c = 0; c < cols && r < rows; c++) {
+      let sel = r;
+      for (let i = r; i < rows; i++) {
+        if (Math.abs(M[i][c]) > Math.abs(M[sel][c])) sel = i;
+      }
+      if (Math.abs(M[sel][c]) < EPS) continue;
+      if (sel !== r) [M[sel], M[r]] = [M[r], M[sel]];
+      const pv = M[r][c];
+      for (let j = c; j < cols; j++) M[r][j] /= pv;
+      for (let i = 0; i < rows; i++) {
+        if (i === r) continue;
+        const f = M[i][c];
+        if (Math.abs(f) < EPS) continue;
+        for (let j = c; j < cols; j++) {
+          M[i][j] -= f * M[r][j];
+          if (Math.abs(M[i][j]) < EPS) M[i][j] = 0;
+        }
+      }
+      r++;
+    }
+    return M;
+  }
+
+  function rankFromREF(M) {
+    if (!M || M.length === 0) return 0;
+    let nonzeroRows = 0;
+    for (let i = 0; i < M.length; i++) {
+      let any = false;
+      for (let j = 0; j < M[0].length; j++) {
+        if (Math.abs(M[i][j]) > EPS) { any = true; break; }
+      }
+      if (any) nonzeroRows++;
+    }
+    return nonzeroRows;
+  }
+
+  
+  function matrixToHTML(A, className = '') {
+    if (!A || A.length === 0) return '<div class="small">[empty]</div>';
+    const table = ['<table class="matrix' + (className ? ' ' + className : '') + '" style="border:1px solid rgba(0,0,0,0.04);margin:8px 0">'];
+    for (let i = 0; i < A.length; i++) {
+      table.push('<tr>');
+      for (let j = 0; j < A[0].length; j++) {
+        table.push(`<td style="padding:8px;border:1px solid rgba(0,0,0,0.04);font-family:var(--mono);">${formatNum(A[i][j])}</td>`);
+      }
+      table.push('</tr>');
+    }
+    table.push('</table>');
+    return table.join('');
+  }
+
+  function vecToHTML(v) {
+    return '<div style="display:inline-block">' + v.map(x => `<div style="padding:6px;border:1px solid rgba(0,0,0,0.04);font-family:var(--mono);">${formatNum(x)}</div>`).join('') + '</div>';
+  }
+
+  function matrixToString(M) {
+    return M.map(row => row.map(v => formatNum(v)).join('\t')).join('\n');
+  }
+
+  function cramerSolve(A, b) {
+    const n = A.length;
+    let html = '<div class="summary-box"><b> Cramer\'s Rule Summary</b><br>det(A) = ' + formatNum(determinant(A)) + '</div>';
+    
+    if (Math.abs(determinant(A)) < EPS) {
+      return html + '<div class="error-box"><b> Cannot apply Cramer\'s Rule:</b> det(A) = 0 (singular matrix)</div>';
+    }
+
+    html += '<div class="result-section"><div class="step-header">Step 1: Original System</div>';
+    html += matrixToHTML(A.map((row, i) => row.concat([b[i]]))) + '</div>';
+
+    const x = [];
+    for (let col = 0; col < n; col++) {
+      const Ai = A.map((row, i) => row.map((val, j) => j === col ? b[i] : val));
+      const detAi = determinant(Ai);
+      x[col] = detAi / determinant(A);
+      html += `<div class="result-section">
+        <div class="step-header">Step ${col + 2}: Replace column ${col + 1}</div>
+        ${matrixToHTML(Ai)}
+        <div class="small">det(A<sub>${col + 1}</sub>) = ${formatNum(detAi)}</div>
+      </div>`;
+    }
+
+    html += '<div class="result-section"><div class="step-header"> Final Solution</div>';
+    html += '<pre class="steps">';
+    x.forEach((val, i) => html += `x<sub>${i + 1}</sub> = ${formatNum(val)}\n`);
+    html += '</pre></div>';
+    return html;
+  }
+
+  function gaussianSolve(Aorig, borig) {
+    const n = Aorig.length, m = Aorig[0].length;
+    let html = '<div class="summary-box"><b>✅ Gaussian Elimination Summary</b><br>Forward elimination → Back substitution</div>';
+    
+    const M = Aorig.map((row, i) => row.concat([borig[i]]));
+    html += '<div class="result-section"><div class="step-header">Step 1: Augmented Matrix [A|b]</div>';
+    html += matrixToHTML(M, 'augmented') + '</div>';
+
+    
+    const steps = [];
+    for (let i = 0; i < Math.min(n, m); i++) {
+      let pivot = i;
+      for (let r = i + 1; r < n; r++) {
+        if (Math.abs(M[r][i]) > Math.abs(M[pivot][i])) pivot = r;
+      }
+      if (Math.abs(M[pivot][i]) < EPS) {
+        steps.push(`Zero pivot at column ${i + 1}`);
+        continue;
+      }
+      if (pivot !== i) {
+        [M[pivot], M[i]] = [M[i], M[pivot]];
+        steps.push(`↕ Swap R${i + 1} ↔ R${pivot + 1}`);
+      }
+      for (let r = i + 1; r < n; r++) {
+        const factor = M[r][i] / M[i][i];
+        if (Math.abs(factor) < EPS) continue;
+        for (let c = i; c < M[0].length; c++) {
+          M[r][c] -= factor * M[i][c];
+        }
+        steps.push(`➖ R${r + 1} -= ${formatNum(factor)} × R${i + 1}`);
+      }
+    }
+
+    html += `<div class="result-section">
+      <div class="step-header">Step 2: Forward Elimination (Upper triangular)</div>
+      ${matrixToHTML(M, 'upper')}
+      <pre class="steps">${steps.join('\n')}</pre>
+    </div>`;
+
+    const x = Array(m).fill(0);
+    for (let i = m - 1; i >= 0; i--) {
+      if (i >= n) continue;
+      let s = M[i][M[0].length - 1];
+      for (let j = i + 1; j < m; j++) {
+        s -= M[i][j] * x[j];
+      }
+      x[i] = s / (M[i][i] || 1);
+    }
+
+    html += '<div class="result-section"><div class="step-header">Step 3: Back Substitution</div>';
+    html += '<pre class="steps">';
+    x.slice(0, n).forEach((val, i) => html += `x<sub>${i + 1}</sub> = ${formatNum(val)}\n`);
+    html += '</pre></div>';
+    return html;
+  }
+
+  function gaussJordanSolve(Aorig, borig) {
+    const n = Aorig.length, m = Aorig[0].length;
+    let html = '<div class="summary-box"><b>✅ Gauss-Jordan Summary</b><br>Direct RREF computation → Read solution from identity matrix</div>';
+    
+    let M = Aorig.map((row, i) => row.concat([borig[i]]));
+    html += '<div class="result-section"><div class="step-header">Step 1: Augmented Matrix [A|b]</div>';
+    html += matrixToHTML(M, 'augmented') + '</div>';
+
+    const steps = [];
+    let r = 0;
+    for (let c = 0; c < m && r < n; c++) {
+      let sel = r;
+      for (let i = r; i < n; i++) {
+        if (Math.abs(M[i][c]) > Math.abs(M[sel][c])) sel = i;
+      }
+      if (Math.abs(M[sel][c]) < EPS) continue;
+      
+      if (sel !== r) {
+        [M[sel], M[r]] = [M[r], M[sel]];
+        steps.push(`↕ Swap R${r + 1} ↔ R${sel + 1}`);
+      }
+      
+      const pv = M[r][c];
+      for (let j = c; j < M[0].length; j++) M[r][j] /= pv;
+      steps.push(`➗ R${r + 1} ÷ ${formatNum(pv)}`);
+      
+      for (let i = 0; i < n; i++) {
+        if (i === r) continue;
+        const factor = M[i][c];
+        if (Math.abs(factor) < EPS) continue;
+        for (let j = c; j < M[0].length; j++) M[i][j] -= factor * M[r][j];
+        steps.push(`➖ R${i + 1} -= ${formatNum(factor)} × R${r + 1}`);
+      }
+      r++;
+    }
+
+    html += `<div class="result-section">
+      <div class="step-header">Step 2: Gauss-Jordan Elimination (RREF)</div>
+      ${matrixToHTML(M, 'rref')}
+      <pre class="steps">${steps.join('\n')}</pre>
+    </div>`;
+
+  
+    const x = Array(m).fill('0.00');
+    for (let i = 0; i < n; i++) {
+      let pivot = -1;
+      for (let j = 0; j < m; j++) {
+        if (Math.abs(M[i][j] - 1) < EPS) {
+          pivot = j;
+          x[j] = formatNum(M[i][M[0].length - 1]);
+          break;
+        }
+      }
+    }
+
+    html += '<div class="result-section"><div class="step-header"> Final Solution (from RREF)</div>';
+    html += '<pre class="steps">';
+    x.slice(0, n).forEach((val, i) => html += `x<sub>${i + 1}</sub> = ${val}\n`);
+    html += '</pre></div>';
+    return html;
+  }
+
+  genBtn.addEventListener('click', () => {
+    const r = Math.max(1, Math.min(12, Number(rowsEl.value) || 1));
+    const c = Math.max(1, Math.min(12, Number(colsEl.value) || 1));
+    rowsEl.value = r; colsEl.value = c;
+    createMatrixInputs(r, c);
+    rankOut.innerHTML = ''; formOut.innerHTML = '';
+    methodCard.style.display = 'none'; answerCard.style.display = 'none';
+  });
+
+  
+  randBtn.addEventListener('click', () => {
+    const r = Number(rowsEl.value), c = Number(colsEl.value);
+    for (let i = 0; i < r; i++) {
+      for (let j = 0; j < c; j++) {
+        
+        const randomInt = Math.floor(Math.random() * 21) - 10;
+        document.getElementById(`a_${i}_${j}`).value = randomInt;
+      }
+      
+      const randomIntB = Math.floor(Math.random() * 21) - 10;
+      document.getElementById(`b_${i}`).value = randomIntB;
+    }
+  });
+
+  computeBtn.addEventListener('click', () => {
+    try {
+      const A = readMatrix();
+      if (!A.length || !A[0].length) {
+        rankOut.innerHTML = '<div class="error-box">Generate matrix first</div>';
+        return;
+      }
+      
+      const rank = matrixRank(A);
+      const cols = A[0].length;
+      let html = `<div class="summary-box">
+        <b> Rank Analysis</b><br>
+        Matrix: ${A.length}×${cols}<br>
+        <b>Rank(A) = ${rank}</b>
+      </div>`;
+      
+      if (rank === cols) {
+        html += '<div class="summary-box"><b> Columns: LINEARLY INDEPENDENT</b></div>';
+      } else {
+        html += '<div class="error-box"><b> Columns: LINEARLY DEPENDENT</b></div>';
+        if (cols > A.length) {
+          html += '<div class="small">Note: #cols > #rows ⇒ always dependent</div>';
+        }
+      }
+      
+      rankOut.innerHTML = html;
+      methodCard.style.display = 'block';
+      answerCard.style.display = 'none';
+    } catch (e) {
+      rankOut.innerHTML = `<div class="error-box">Error: ${e.message}</div>`;
+    }
+  });
+
+  clearBtn.addEventListener('click', () => {
+    const r = Number(rowsEl.value), c = Number(colsEl.value);
+    for (let i = 0; i < r; i++) {
+      for (let j = 0; j < c; j++) document.getElementById(`a_${i}_${j}`).value = '0';
+      document.getElementById(`b_${i}`).value = '0';
+    }
+    rankOut.innerHTML = ''; formOut.innerHTML = ''; answerCard.style.display = 'none';
+  });
+
+  solveBtn.addEventListener('click', () => {
+    const method = document.querySelector('input[name="method"]:checked')?.value;
+    if (!method) { alert('Choose a solving method'); return; }
+    
+    const A = readMatrix(), b = readB();
+    answerCard.style.display = 'block';
+    answerOut.innerHTML = '<div class="small">Computing detailed solution...</div>';
+    
+    try {
+      let html = '';
+      if (method === 'cramer') {
+        if (A.length !== A[0].length) {
+          html = '<div class="error-box">Cramer\'s Rule needs square matrix. Choose Gaussian or Gauss-Jordan.</div>';
+        } else {
+          html = cramerSolve(A, b);
+        }
+      } else if (method === 'gaussian') {
+        html = gaussianSolve(A, b);
+      } else {
+        html = gaussJordanSolve(A, b);
+      }
+      answerOut.innerHTML = html;
+      answerCard.scrollIntoView({behavior: 'smooth'});
+    } catch (e) {
+      answerOut.innerHTML = `<div class="error-box">Computation error: ${e.message}</div>`;
+    }
+  });
+
+  showFormBtn.addEventListener('click', () => {
+    try {
+      const A = readMatrix();
+      if (!A || A.length === 0) {
+        formOut.innerHTML = '<div class="error-box">Generate matrix first</div>';
+        return;
+      }
+      
+      const mode = document.querySelector('input[name="formMode"]:checked')?.value || 'rref';
+      let M, title;
+      if (mode === 'ref') {
+        M = computeREF(A);
+        title = 'Row Echelon Form (REF)';
+      } else {
+        M = computeRREF(A);
+        title = 'Reduced Row Echelon Form (RREF)';
+      }
+      
+      const rankFrom = rankFromREF(M);
+      let html = `<div class="summary-box">
+        <b>${title}</b><br>Rank = ${rankFrom}
+      </div>`;
+      html += matrixToHTML(M, mode);
+      
+      formOut.innerHTML = html;
+      formOut.scrollIntoView({behavior: 'smooth'});
+    } catch (e) {
+      formOut.innerHTML = `<div class="error-box">Error: ${e.message}</div>`;
+    }
+  });  document.getElementById('helpBtn').addEventListener('click', () => {
+    document.getElementById('helpPanel').classList.toggle('visible');
+  });
+
+  createMatrixInputs(3, 3);
+</script>
+</body>
+</html>
+

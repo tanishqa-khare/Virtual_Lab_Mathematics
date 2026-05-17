@@ -1,0 +1,139 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>INFORMATION PORTAL</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="main.css" />
+	</head>
+	<body class="is-preload">
+
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Main -->
+					<div id="main">
+						<div class="inner">
+
+							<!-- Header -->
+								<header id="header">
+									<a href="index.html" class="logo"><strong>INFORMATION PORTAL</strong></a>
+									
+								</header>
+
+							<!-- Content -->
+								<section>
+									<header class="main">
+										<h1>How to use Virtual Lab-Mathematics</h1>
+									</header>
+                                    <p>A matrix is a rectangular array of numbers, symbols, or expressions arranged in rows and columns, enclosed in brackets. Rows are horizontal lines of elements, while columns are vertical lines. </p>
+                                    <img src="matrix.jpg" alt="" />
+                                    <p><strong>RANK OF MATRIX</strong>
+                                        <br>The rank of a matrix is the maximum number of linearly independent(L.I) row vectors or column vectors within the matrix. It indicates the dimension of the vector space spanned by its rows or columns. In simple terms, the rank gives the number of independent equations in a system of linear equations represented by the matrix.
+                                            <br>
+                                            <br>The matrix A is said to be of rank r, 
+                                            <br>1.If there is at least one minor of A of order r which does not vanish.
+                                            <br>2.Every minor of A of order (r + 1) or higher vanishes.
+                                            <br>
+                                        <br>The rank of matrix is found by two methods:
+                                        <br> 1. Echeclon Form
+                                        <br> 2. Normal Form</p>
+                                    <p><strong>ECHELON FORM</strong>
+                                    <br>The rank of a matrix in echelon form is simply the number of non-zero rows. A non-zero row is any row that contains at least one non-zero element.<br>
+                                        <br>The following steps are followed to calculate the rank of a matrix using the Echelon form:
+                                        <br>1. Locate the leftmost non-zero column (this is the pivot column) of the matrix.
+                                        <br>2. If needed, swap rows to bring a non-zero entry to the top of this column.
+                                        <br>3. Use row replacement to make all entries below the pivot zero.
+                                        <br>4. Move to the next row and next column (diagonally down-right).
+                                        <br>5. Repeat these steps until no more pivots can be formed.
+                                        <br>6. Count the non-zero rows → that’s the rank.</p>
+                                    <img src="echelon.jpg" alt="" />    
+                                    <p><strong>NORMAL FORM</strong>
+                                        <br>To find the rank of a matrix using the minor method, the following steps are followed:
+                                        <br>1. Calculate the determinant of the matrix (say A). If det(A) ≠ 0, then the rank of matrix A = order of matrix A.
+                                        <br>2. If det(A) = 0, then the rank of the matrix is equal to the order of the maximum possible nonzero minor of the matrix.</p>
+                                    
+                                        <img src="normal1.jpg" alt="" />
+                                    <br>
+                                    <p><strong>SYSTEM OF LINEAR EQUATIONS</strong>
+                                        <br>In mathematics, a system of linear equations (or linear system) is a collection of two or more linear equations involving the same variables.
+                                        <br>There are two types of system of linear equations :-
+                                        <br><br><strong>a. Homogeneous Equations -</strong>
+                                               <br>In the homogeneous system of linear equations, the constant term in every equation is equal to 0. i.e., no equation in such systems has a constant term in it.
+                                               <br>Homogeneous Equations has consistent solution which can further have either Unique Solution[r=n] or Many (infinite) Solution[r is less than n] .
+                                        <br><br><strong>b. Non-Homogeneous Equation-</strong>
+                                               <br>In the Non-homogeneous system of linear equation, the constant term in every equation is not equal to 0.
+                                               <br>Non-Homogeneous Equation can either have consistent solution (if rank(A)=rank(A|B)) or Inconsistent solution (i.e no solution)(if rank(A)!=rank(A|B)) .</p>
+
+                                    <p><strong>METHODS TO SOLVE SYSTEM OF LINEAR EQUATIONS</strong></p>
+                                    <P><strong>1. GAUSS ELIMINATION</strong>
+                                        <br>The Gauss Elimination method is an algorithm used to solve systems of linear equations. It involves performing a sequence of operations on the augmented matrix of a system of equations, gradually reducing it to a simpler form. This form, often called row echelon form, can then be 
+                                            solved easily through back-substitution. The method systematically eliminates variables to reduce the complexity of solving for unknowns.</P>
+                                            <img src="GAUSS.jpg" alt="" />
+                                    <p><strong>2. GAUSS JORDAN METHOD</strong>
+                                       <BR>The Gauss Jordan Elimination is an algorithm to solve a system of linear equations by representing it as an augmented matrix, reducing it using row
+                                           operations, and expressing the system in reduced row-echelon form to find the
+                                           values of the variables.</p>
+
+                                    <P><strong>3. CRAMER'S RULE</strong>
+                                       <BR>In linear algebra, Cramer’s Rule is a powerful method used to solve systems of linear equations using determinants. It applies to square systems (number of
+                                           equations = number of variables) and provides exact values for each variable without the need for elimination or substitution.</P>
+                                    
+
+									
+									<hr class="major" />
+
+									 
+
+								</section>
+
+						</div>
+					</div>
+
+				<!-- Sidebar -->
+					<div id="sidebar">
+						<div class="inner">
+
+							<!-- Menu -->
+								<nav id="menu">
+									<header class="major">
+										<h2>Menu</h2>
+									</header>
+									<ul>
+										<li><a href="index.html">Homepage</a></li>
+										<li><a href="about us.html">About Us</a></li>
+										<li><a href="info.html">Information portal</a></li>
+										<li><a href="test.html">Take Test</a></li>
+										<li><a>Simulation</a>
+                                        <select id="pageSelect">
+    										<option value="">-- Select --</option>
+    										<option value="rank.html">Rank of Matrix</option>
+    										<option value="sol.html">System Of Linear Equations</option>
+    										
+										</select>
+                                        <br>
+										<button onclick="goToPage()">Go</button>
+										
+										<script>
+											function goToPage() 
+											{
+    											var url = document.getElementById("pageSelect").value;
+    											if (url) 
+												{
+        											window.location.href = url;
+    											}
+											}
+										</script>
+                                        </li>
+										
+									</ul>
+								</nav>
+						</div>
+					</div>
+
+			</div>
+
+		
+
+	</body>
+</html>
