@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dynamic KVL Solver using Pivot Method</title>
+
+<style>
+
+body{
+    font-family: Arial, sans-serif;
+    background:#fff3e6;
+    margin:0;
+    padding:30px;
+}
+
+.container{
+    max-width:1100px;
+    margin:auto;
+    background:white;
+    padding:25px;
+    border-radius:15px;
+    box-shadow:0 5px 15px rgba(0,0,0,0.1);
+}
+
+h1,h2,h3{
+    text-align:center;
+    color:#e67300;
+}
+
+.center{
+    text-align:center;
+    margin-bottom:20px;
+}
+
+input{
+    width:60px;
+    padding:6px;
+    border:1px solid #ccc;
+    border-radius:6px;
+    text-align:center;
+    margin:3px;
+}
+
+button{
+    padding:12px 25px;
+    background:#ff944d;
+    color:white;
+    border:none;
+    border-radius:8px;
+    font-size:16px;
+    cursor:pointer;
+    margin:10px;
+}
+
+button:hover{
+    background:#e67300;
+}
+
+.equation-block{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:6px;
+    margin:10px 0;
+    flex-wrap:wrap;
+}
+
+.matrix{
+    border-collapse:collapse;
+    margin:auto;
+}
+
+.matrix td{
+    border:1px solid #444;
+    padding:8px 12px;
+    text-align:center;
+}
+
+.step{
+    background:#fff7f0;
+    padding:15px;
+    border-left:5px solid #ff944d;
+    margin-top:15px;
+    border-radius:8px;
+}
+
+.result{
+    margin-top:20px;
+    padding:15px;
+    background:#fff0e6;
+    border-radius:10px;
+    font-size:18px;
+    text-align:center;
+}
+
+canvas{
+    display:block;
+    margin:20px auto;
+    border:2px solid #ccc;
+    border-radius:10px;
+    background:white;
+}
+
+.matrix-title{
+    text-align:center;
+    margin-top:15px;
+    font-weight:bold;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Dynamic KVL Solver using Pivot Method</h1>
+
+<div class="center">
+
+    <label><b>Enter Number of Loops:</b></label>
+
+    <input type="number" id="loopCount" min="2" max="10">
+    <br>
+    <button onclick="generateInputs()">Generate Equations</button>
+
+</div>
+
+<div id="equationContainer"></div>
+
+<div class="center">
+    <button onclick="solveKVL()">Solve using KVL</button>
+</div>
+
+<h2>Generated KVL Circuit</h2>
+
+<canvas id="circuitCanvas" width="1000" height="500"></canvas>
+
+<div id="steps"></div>
+
+<div id="finalResult"></div>
+
+</div>
+
+<script>
+
+let n = 0;
+
+function generateInputs(){
+
+    n = parseInt(document.getElementById("loopCount").value);
+
+    if(!n || n < 2){
+        alert("Enter valid number of loops");
+        return;
+    }
+
+    let container = document.getElementById("equationContainer");
+
+    let html = "";
+
+    for(let i=0;i<n;i++){
+
+        html += `<div class="equation-block">`;
+
+        html += `<b>Loop ${i+1}:</b>`;
+
+        for(let j=0;j<n;j++){
+
+            html += `
+            <input id="a${i}${j}">
+            I${j+1}
+            `;
+
+            if(j<n-1){
+                html += ` + `;
+            }
+        }
+
+        html += ` = <input id="b${i}">`;
+
+        html += `</div>`;
+    }
+
+    container.innerHTML = html;
+}
+
+function getVal(id){
+
+    return parseFloat(document.getElementById(id).value) || 0;
+}
+
+function displayMatrix(matrix,title){
+
+    let html = `<div class='matrix-title'>${title}</div>`;
+
+    html += "<table class='matrix'>";
+
+    for(let i=0;i<matrix.length;i++){
+
+        html += "<tr>";
+
+        for(let j=0;j<matrix[i].length;j++){
+
+            html += `<td>${matrix[i][j].toFixed(3)}</td>`;
+        }
+
+        html += "</tr>";
+    }
+
+    html += "</table>";
+
+    return html;
+}
+
+function drawKVLCircuit(A,B){
+
+    const canvas = document.getElementById("circuitCanvas");
+
+    const ctx = canvas.getContext("2d");
+
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    ctx.lineWidth = 3;
+
+    ctx.font = "16px Arial";
+
+    let startX = 50;
+    let startY = 70;
+
+    for(let i=0;i<n;i++){
+
+        let x = startX + (i % 4) * 220;
+
+        let y = startY + Math.floor(i / 4) * 180;
+
+        ctx.strokeStyle = "#e67300";
+
+        ctx.strokeRect(x,y,140,100);
+
+        ctx.fillStyle = "#e67300";
+
+        ctx.fillText(`Loop ${i+1}`,x+35,y-10);
+
+        ctx.fillText(`I${i+1} →`,x+35,y+130);
+
+        ctx.fillText(`R${i+1}`,x+45,y+55);
+    }
+
+    ctx.fillStyle = "black";
+
+    let eqY = 420;
+
+    for(let i=0;i<n;i++){
+
+        let eq = "";
+
+        for(let j=0;j<n;j++){
+
+            eq += `${A[i][j]}I${j+1}`;
+
+            if(j<n-1){
+                eq += " + ";
+            }
+        }
+
+        eq += ` = ${B[i]}`;
+
+        ctx.fillText(eq,40,eqY);
+
+        eqY += 25;
+    }
+}
+
+function solveKVL(){
+
+    if(n === 0){
+
+        alert("Generate equations first");
+
+        return;
+    }
+
+    let A = [];
+
+    let B = [];
+
+    for(let i=0;i<n;i++){
+
+        let row = [];
+
+        for(let j=0;j<n;j++){
+
+            row.push(getVal(`a${i}${j}`));
+        }
+
+        A.push(row);
+
+        B.push(getVal(`b${i}`));
+    }
+
+    drawKVLCircuit(A,B);
+
+    let augmented = [];
+
+    for(let i=0;i<n;i++){
+
+        augmented.push([...A[i],B[i]]);
+    }
+
+    let stepsHTML = "";
+
+    stepsHTML += `<div class='step'>`;
+
+    stepsHTML += `<h3>Initial Augmented Matrix</h3>`;
+
+    stepsHTML += displayMatrix(augmented,"Initial Matrix");
+
+    stepsHTML += `</div>`;
+
+    // Gauss Jordan Elimination
+
+    for(let i=0;i<n;i++){
+
+        let pivot = augmented[i][i];
+
+        if(pivot === 0){
+
+            document.getElementById("finalResult").innerHTML =
+            `<div class='result'>Pivot became zero at row ${i+1}</div>`;
+
+            return;
+        }
+
+        // Make pivot = 1
+
+        for(let j=0;j<=n;j++){
+
+            augmented[i][j] /= pivot;
+        }
+
+        stepsHTML += `<div class='step'>`;
+
+        stepsHTML += `<h3>Step ${i+1}: Make Pivot 1</h3>`;
+
+        stepsHTML += `<p>R${i+1} = R${i+1} / ${pivot.toFixed(3)}</p>`;
+
+        stepsHTML += displayMatrix(augmented,`After Pivot ${i+1}`);
+
+        stepsHTML += `</div>`;
+
+        // Eliminate other rows
+
+        for(let k=0;k<n;k++){
+
+            if(k !== i){
+
+                let factor = augmented[k][i];
+
+                for(let j=0;j<=n;j++){
+
+                    augmented[k][j] -= factor * augmented[i][j];
+                }
+
+                stepsHTML += `<div class='step'>`;
+
+                stepsHTML += `<h3>Eliminate Column ${i+1}</h3>`;
+
+                stepsHTML += `<p>R${k+1} = R${k+1} - (${factor.toFixed(3)})R${i+1}</p>`;
+
+                stepsHTML += displayMatrix(augmented,`After Eliminating Row ${k+1}`);
+
+                stepsHTML += `</div>`;
+            }
+        }
+    }
+
+    document.getElementById("steps").innerHTML = stepsHTML;
+
+    let resultHTML = `
+    <div class='result'>
+    <h2>Final Answer</h2>
+    `;
+
+    for(let i=0;i<n;i++){
+
+        resultHTML += `I${i+1} = ${augmented[i][n].toFixed(3)} A <br><br>`;
+    }
+
+    resultHTML += `</div>`;
+
+    document.getElementById("finalResult").innerHTML = resultHTML;
+}
+
+</script>
+
+</body>
+</html>
